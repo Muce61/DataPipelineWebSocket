@@ -1,7 +1,7 @@
 package com.mc.config;
 
 import com.mc.handler.ChatWebSocketHandler;
-import com.mc.intecptor.AuthHandshakeInterceptor;
+import com.mc.interceptor.AuthHandshakeInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;

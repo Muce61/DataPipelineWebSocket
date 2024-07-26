@@ -74,6 +74,17 @@
             margin-left: 10px;
             margin-right: 0;
         }
+        .chat-notification {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            padding: 10px;
+            background: #ffeb3b;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
         .chat-input {
             display: flex;
             border-top: 1px solid #ddd;
@@ -107,54 +118,68 @@
     </style>
     <script>
         let socket;
+        let sessionId;
 
         function connect() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const apiSecret = urlParams.get('api-secret');
-            const topics = urlParams.get('topics');
-
-            if (!apiSecret || !topics) {
-                alert("Missing required parameters: api-secret and topics");
-                return;
-            }
-
-            const wsUrl = `ws://172.18.6.181:9090/chat?api-secret=${apiSecret}&topics=${topics}`;
+            const wsUrl = `ws://172.18.6.181:9090/chat`;
             socket = new WebSocket(wsUrl);
 
             socket.onmessage = function (event) {
                 const messages = document.getElementById("messages");
                 const message = document.createElement("div");
-                message.className = "chat-message";
 
-                // Assume the message format is "Kafka: message" or "userId: message"
-                const parts = event.data.split(": ");
-                const sender = parts[0];
-                const text = parts.slice(1).join(": ");
+                if (event.data.includes(": ")) {
+                    // 正常消息格式 "sender: message"
+                    message.className = "chat-message";
 
-                const avatar = document.createElement("div");
-                avatar.className = "avatar";
-                avatar.textContent = sender.charAt(0).toUpperCase(); // Initial as avatar text
-                avatar.style.backgroundColor = stringToColor(sender); // Set background color
+                    const parts = event.data.split(": ");
+                    const sender = parts[0];
+                    const text = parts.slice(1).join(": ");
+                    if (parts === sessionId) {
 
-                const bubble = document.createElement("div");
-                bubble.className = "bubble";
-                bubble.textContent = text;
+                    }
+                    const avatar = document.createElement("div");
+                    avatar.className = "avatar";
+                    avatar.textContent = sender.charAt(0).toUpperCase(); // Initial as avatar text
+                    avatar.style.backgroundColor = stringToColor(sender); // Set background color
 
-                message.appendChild(avatar);
-                message.appendChild(bubble);
+                    const bubble = document.createElement("div");
+                    bubble.className = "bubble";
+                    bubble.textContent = text;
 
-                if (sender === "Kafka") {
-                    message.classList.add("kafka");
-                } else if (sender === socket.id) {
-                    message.classList.add("self");
+                    message.appendChild(avatar);
+                    message.appendChild(bubble);
+
+                    if (sender === "Kafka") {
+                        message.classList.add("kafka");
+                    } else if (sender === socket.id) {
+                        message.classList.add("self");
+                    }
+                } else {
+                    // 通知消息格式
+                    message.className = "chat-notification";
+                    message.textContent = event.data;
                 }
 
                 messages.appendChild(message);
                 messages.scrollTop = messages.scrollHeight;
             };
 
-            socket.onclose = function (event) {
-                alert("错误");
+            socket.onerror = function(event) {
+                console.error(event);
+            };
+
+            socket.onclose = function(event) {
+                if (event.reason) {
+                    try {
+                        alert(event.reason);
+                    } catch (e) {
+                        console.error("Error parsing close reason", e);
+                        alert("错误: " + event.reason);
+                    }
+                } else {
+                    alert("Disconnected from WebSocket server");
+                }
             };
 
             // Add an event listener for beforeunload to close the WebSocket connection
@@ -184,6 +209,15 @@
             }
             return color;
         }
+
+        function displayError(result) {
+            const errorContainer = document.getElementById("error");
+            errorContainer.innerHTML = `
+        <div>数据：${result.data}</div>
+        <div>代码：${result.code}</div>
+        <div>信息：${result.message}</div>
+    `;
+        }
     </script>
 </head>
 <body onload="connect()">
@@ -194,7 +228,7 @@
     <div id="messages" class="chat-messages"></div>
     <div id="error" class="error-message"></div>
     <div class="chat-input">
-        <input type="text" id="message" placeholder="Type a message">
+        <label for="message"></label><input type="text" id="message" placeholder="Type a message">
         <button onclick="sendMessage()">Send</button>
     </div>
 </div>

@@ -265,4 +265,14 @@ public class RedisCache {
     {
         return redisTemplate.keys(pattern);
     }
+
+    /**
+     * 获取所有key
+     *
+     * @return 所有key
+     */
+    public Set<String> getAllKeys() {
+        // 使用通配符 * 获取所有的 key
+        return redisTemplate.keys("*");
+    }
 }

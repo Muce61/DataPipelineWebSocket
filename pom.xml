@@ -57,17 +57,17 @@
       </exclusions>
     </dependency>
 
-    <!--  Logback  -->
+    <!-- 手动添加 Logback 安全版本 -->
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.4.12</version>
+      <version>1.4.12</version> <!-- 使用最新的安全版本 -->
     </dependency>
     <!-- Logback Core -->
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-core</artifactId>
-      <version>1.4.12</version>
+      <version>1.4.12</version> <!-- 确保与logback-classic版本匹配 -->
     </dependency>
 
     <!-- Spring Boot Starter WebSocket -->

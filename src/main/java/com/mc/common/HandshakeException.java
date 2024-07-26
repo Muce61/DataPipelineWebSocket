@@ -4,10 +4,11 @@ import lombok.Getter;
 
 @Getter
 public class HandshakeException extends RuntimeException {
-    private final String result;
+    private final String jsonMessage;
 
-    public HandshakeException(String result) {
-        this.result = result;
+    public HandshakeException(String jsonMessage) {
+        super(jsonMessage);
+        this.jsonMessage = jsonMessage;
     }
 
 }

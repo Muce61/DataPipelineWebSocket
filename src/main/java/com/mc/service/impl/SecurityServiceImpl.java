@@ -2,8 +2,8 @@ package com.mc.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.mc.dao.TabSecurityCompanyMapper;
-import com.mc.entity.SecurityCompany;
+import com.mc.entity.PermissionDetails;
+import com.mc.mapper.TabSecurityCompanyMapper;
 import com.mc.service.SecurityService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -14,15 +14,24 @@ import org.springframework.stereotype.Service;
  * @Date 2024/07/16
  **/
 @Service("SecurityService")
-public class SecurityServiceImpl extends ServiceImpl<TabSecurityCompanyMapper, SecurityCompany>  implements SecurityService {
+public class SecurityServiceImpl extends ServiceImpl<TabSecurityCompanyMapper, PermissionDetails>  implements SecurityService {
     @Override
-    public Integer isPass(String key) {
+    public Boolean isPass(String key, String[] topics) {
         if (StringUtils.isBlank(key)) {
-            return 0;
+            return false;
         }
-        QueryWrapper<SecurityCompany> query = new QueryWrapper<>();
-        query.eq("uuid", key);
-        SecurityCompany queryOne = this.getOne(query);
-        return queryOne == null ? 0 : 1;
+
+        boolean flag = true;
+        for (String topic : topics) {
+            QueryWrapper<PermissionDetails> query = new QueryWrapper<>();
+            query.eq("uuid", key);
+            query.like("permission_name", topic);
+            PermissionDetails queryOne = this.getOne(query);
+            if (queryOne == null) {
+                flag = false;
+            }
+        }
+
+        return flag;
     }
 }
